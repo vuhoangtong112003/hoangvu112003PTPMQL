@@ -1,0 +1,9 @@
+@model DemoMVC112.Models.Student
+
+<h2>Thông tin sinh viên đã nhập:</h2>
+<p><b>Mã SV:</b> @Model.Id</p>
+<p><b>Họ tên:</b> @Model.Name</p>
+<p><b>Tuổi:</b> @Model.Age</p>
+<p><b>Chuyên ngành:</b> @Model.Major</p>
+
+<a asp-action="CreateStudent">🔁 Nhập lại</a>

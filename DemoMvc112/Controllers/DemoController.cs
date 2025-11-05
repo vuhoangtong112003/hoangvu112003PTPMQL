@@ -1,53 +1,71 @@
 using Microsoft.AspNetCore.Mvc;
-using System.IO;
+using DemoMVC112.Models; // nhớ import namespace của Model
+using System;
 
 namespace DemoMVC112.Controllers
 {
     public class DemoController : Controller
     {
-        // 1️⃣ ViewResult - trả về 1 View (HTML)
         public IActionResult Index()
         {
-            return View(); // sẽ gọi View có tên Index.cshtml
+            return View();
+        }
+        // ==============================
+        // 1️⃣ ViewBag - ViewData - TempData
+        // ==============================
+        public IActionResult ShowData()
+        {
+            // Gửi dữ liệu sang View
+            ViewBag.Message = "Xin chào từ ViewBag!";
+            ViewData["Course"] = "Khóa học ASP.NET Core MVC";
+            TempData["Notice"] = "Dữ liệu TempData chỉ tồn tại trong 1 request tiếp theo.";
+
+            return View(); // Views/Demo/ShowData.cshtml
         }
 
-        // 2️⃣ RedirectResult - chuyển hướng sang 1 URL khác
-        public IActionResult RedirectExample()
+        public IActionResult NextPage()
         {
-            return Redirect("https://www.google.com");
+            // Nhận lại dữ liệu từ TempData (nếu còn)
+            var notice = TempData["Notice"];
+            return Content($"TempData nhận được: {notice}");
         }
 
-        // 3️⃣ RedirectToActionResult - chuyển hướng sang 1 action khác trong cùng controller hoặc khác controller
-        public IActionResult RedirectToActionExample()
+        // ==============================
+        // 2️⃣ Gửi dữ liệu trực tiếp Controller → View
+        // ==============================
+        public IActionResult SimpleData()
         {
-            // Chuyển hướng đến action "Index" trong controller "Home"
-            return RedirectToAction("Index", "Home");
+            string message = "Đây là dữ liệu gửi từ Controller sang View!";
+            DateTime now = DateTime.Now;
+
+            // Dùng Tuple để gửi nhiều dữ liệu (có thể dùng ViewModel)
+            var data = (message, now);
+            return View(data); // Views/Demo/SimpleData.cshtml
         }
 
-        // 4️⃣ JsonResult - trả về dữ liệu JSON (thường dùng cho API)
-        public IActionResult JsonExample()
+        // ==============================
+        // 3️⃣ Gửi – nhận dữ liệu giữa Model ↔ View ↔ Controller
+        // ==============================
+
+        // Hiển thị form nhập
+        [HttpGet]
+        public IActionResult CreateStudent()
         {
-            var data = new
+            return View(); // Views/Demo/CreateStudent.cshtml
+        }
+
+        // Nhận dữ liệu từ form gửi lên (POST)
+        [HttpPost]
+        public IActionResult CreateStudent(Student student)
+        {
+            if (ModelState.IsValid)
             {
-                Name = "Marguerite Franklin",
-                Project = "DemoMVC112",
-                Message = "Hello from JsonResult!"
-            };
-            return Json(data);
-        }
+                // Sau khi nhận dữ liệu thành công -> gửi sang view kết quả
+                return View("ResultStudent", student);
+            }
 
-        // 5️⃣ FileResult - trả về 1 tệp tin (ví dụ: text, pdf, image,...)
-        public IActionResult FileExample()
-        {
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "files", "sample.txt");
-            var fileBytes = System.IO.File.ReadAllBytes(filePath);
-            return File(fileBytes, "text/plain", "sample.txt");
-        }
-
-        // 6️⃣ StatusCodeResult - trả về mã trạng thái HTTP (404, 500, 200,...)
-        public IActionResult StatusExample()
-        {
-            return StatusCode(404, "Page not found - custom message from StatusCodeResult!");
+            // Nếu dữ liệu không hợp lệ, hiển thị lại form
+            return View();
         }
     }
 }
